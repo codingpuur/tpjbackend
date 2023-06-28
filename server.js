@@ -7,11 +7,7 @@ const cors = require("cors");
 // Set up Express server
 const app = express();
 const port = 3000;
-app.use(
-  cors({
-    origin: "http://127.0.0.1:5173",
-  })
-);
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -51,6 +47,7 @@ app.use(express.json());
 app.post("/upload", upload.single("image"), async (req, res) => {
   try {
     // Upload image to Cloudinary
+    console.log(req.file.path)
     const result = await cloudinary.uploader.upload(req.file.path);
 
     // Create a new image document in MongoDB
