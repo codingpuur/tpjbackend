@@ -156,7 +156,20 @@ app.get("/images/person", async (req, res) => {
     
     const { category, name } = req.query;
 
-    const data = await redis.get(name);
+
+    let ok="";
+
+    if(category==undefined){
+     ok = name;
+    }else{
+    ok = category;
+    }
+
+    console.log(`ok = ${ok}`)
+
+    
+
+    const data = await redis.get(ok);
     if(data){
       res.json(JSON.parse(data));
     }
@@ -177,7 +190,7 @@ app.get("/images/person", async (req, res) => {
 
     // Find images in MongoDB based on the filter
     const images = await Image.find(filter);
-    redis.set(name, JSON.stringify(images));
+    redis.set(ok, JSON.stringify(images));
 
     res.json(images);
   }
