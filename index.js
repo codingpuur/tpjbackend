@@ -4,6 +4,11 @@ const cloudinary = require("cloudinary").v2;
 const mongoose = require("mongoose");
 const cors = require("cors");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const redis = require("./redish");
+
+
+
+
 
 // Set up Express server
 const app = express();
@@ -17,6 +22,13 @@ mongoose.connect("mongodb+srv://new:gbQpXuQAFZYofXy4@cluster0.welnru8.mongodb.ne
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+
+
+
+
+
+
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
 db.once("open", () => {
@@ -30,17 +42,7 @@ cloudinary.config({
   api_secret: "lbycLkJx0iKXdCK_vOy51AbCo-M",
 });
 
-// Set up multer for file uploads
-// const upload = multer({ dest: "uploads/" });
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/"); // Set the destination folder where uploaded images will be stored temporarily
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9); // Generate a unique filename
-//     cb(null, uniqueSuffix + "-" + file.originalname);
-//   },
-// });
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   folder: "uploads", // Set the folder in Cloudinary where you want to store the images
@@ -138,7 +140,23 @@ app.get("/unique/repeated/:category", async (req, res) => {
 
 app.get("/images/person", async (req, res) => {
   try {
+
+    
+    
+    
+    
     const { category, name } = req.query;
+
+    const data = await redis.get(name);
+    if(data){
+      res.json(JSON.parse(data));
+    }
+    else{
+
+  
+
+    
+ 
     let filter = {};
 
     if (category) {
@@ -150,8 +168,10 @@ app.get("/images/person", async (req, res) => {
 
     // Find images in MongoDB based on the filter
     const images = await Image.find(filter);
+    redis.set(name, JSON.stringify(images));
 
     res.json(images);
+  }
   } catch (err) {
     console.error(err);
     res.status(500).json({
