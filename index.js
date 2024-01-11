@@ -114,6 +114,13 @@ app.post("/uploads", upload.array("images", 120), async (req, res) => {
 app.get("/unique/repeated/:category", async (req, res) => {
   try {
     const category = req.params.category;
+    const data = await redis.get(category);
+    if(data){
+      res.json(JSON.parse(data));
+    }else{
+
+ 
+
 
     // Retrieve unique image names and URLs for the specified category
     const uniqueImages = await Image.aggregate([
@@ -128,8 +135,10 @@ app.get("/unique/repeated/:category", async (req, res) => {
       },
       { $match: { _id: { $ne: null }, url: { $ne: null }, id: { $ne: null } } },
     ]);
+    redis.set(category, JSON.stringify(uniqueImages));
 
     res.json(uniqueImages);
+  }
   } catch (err) {
     console.error(err);
     res.status(500).json({
